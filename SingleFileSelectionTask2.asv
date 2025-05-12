@@ -1,0 +1,85 @@
+% =========================================================================
+% DIG5111 - Task 3: Noise Reduction using IIR Low-Pass Filter
+% =========================================================================
+% This script applies a low-pass Butterworth filter to the file
+% "task1sig.wav" to remove high-frequency noise while preserving
+% the musical content. The result is saved as "filteredsig.wav".
+% =========================================================================
+
+clear;
+clc;
+
+fprintf('\nDIG5111 - Task 3: Filtering task1sig.wav\n');
+
+% -------------------------------------------------------------------------
+% Step 1: Load the noisy signal
+% -------------------------------------------------------------------------
+[x, fs] = audioread('task1sig.wav');
+disp('Loaded "task1sig.wav" successfully.');
+
+% Convert to mono if stereo
+if size(x, 2) == 2
+    x = mean(x, 2);
+    disp('Stereo detected — converted to mono.');
+end
+
+% -------------------------------------------------------------------------
+% Step 2: Define filter parameters
+% -------------------------------------------------------------------------
+cutoff = 3000;       % Cutoff frequency (Hz)
+order = 4;           % Filter steepness
+filterType = 'low';  % Low-pass filter
+Wn = cutoff / (fs/2);  % Normalize cutoff frequency (0–1)
+
+% -------------------------------------------------------------------------
+% Step 3: Design Butterworth filter
+% -------------------------------------------------------------------------
+[b, a] = butter(order, Wn, filterType);
+disp('Low-pass Butterworth filter designed.');
+
+% -------------------------------------------------------------------------
+% Step 4: Apply filter using filtfilt (zero-phase)
+% -------------------------------------------------------------------------
+y = filtfilt(b, a, x);
+disp('Filter applied using zero-phase filtering.');
+
+% -------------------------------------------------------------------------
+% Step 5: Save the filtered output
+% -------------------------------------------------------------------------
+audiowrite('filteredsig.wav', y, fs);
+disp('Filtered signal saved as "filteredsig.wav".');
+
+% -------------------------------------------------------------------------
+% Step 6: Optional playback
+% -------------------------------------------------------------------------
+playChoice = menu('Play audio?', ...
+                  'Original (noisy)', ...
+                  'Filtered (cleaned)', ...
+                  'Play both', ...
+                  'Skip');
+
+switch playChoice
+    case 1
+        soundsc(x, fs);
+    case 2
+        soundsc(y, fs);
+    case 3
+        soundsc(x, fs);
+        pause(length(x)/fs + 1);
+        soundsc(y, fs);
+    otherwise
+        disp('Playback skipped.');
+end
+
+% -------------------------------------------------------------------------
+% Step 7: Summary Output
+% -------------------------------------------------------------------------
+fprintf('\nFiltering complete ✅\n');
+fprintf('-------------------------------------------\n');
+fprintf('Input file       : task1sig.wav\n');
+fprintf('Filter type      : Low-pass Butterworth\n');
+fprintf('Cutoff frequency : %d Hz\n', cutoff);
+fprintf('Filter order     : %d\n', order);
+fprintf('Output saved as  : filteredsig.wav\n');
+fprintf('High-frequency noise attenuated.\n');
+fprintf('Musical content below 3 kHz preserved.\n\n');
